@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wahltho/X-Plane-LevelUp-737NG-Lufthansa-Livery/blob/main/schema/release-manifest.schema.json",
+  "title": "LevelUp Lufthansa livery release manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "package",
+    "source",
+    "aircraft",
+    "livery",
+    "rights",
+    "installation",
+    "archive",
+    "files",
+    "totals",
+    "validation"
+  ],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "releaseDate"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "releaseDate": {"type": "string", "format": "date"}
+      }
+    },
+    "source": {"type": "object"},
+    "aircraft": {"type": "object"},
+    "livery": {"type": "object"},
+    "rights": {"type": "object"},
+    "installation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["archiveRoot", "target"],
+      "properties": {
+        "archiveRoot": {"const": "Lufthansa"},
+        "target": {"type": "string", "minLength": 1}
+      }
+    },
+    "archive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fileName", "size", "sha256", "method"],
+      "properties": {
+        "fileName": {"type": "string", "pattern": "\\.zip$"},
+        "size": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "method": {"const": "stored"}
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "size", "sha256", "variants", "required"],
+        "properties": {
+          "path": {"type": "string", "pattern": "^Lufthansa/"},
+          "size": {"type": "integer", "minimum": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "variants": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"enum": ["737-700", "737-900ER"]}
+          },
+          "required": {"const": true}
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fileCount", "uncompressedBytes"],
+      "properties": {
+        "fileCount": {"type": "integer", "minimum": 1},
+        "uncompressedBytes": {"type": "integer", "minimum": 1}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requiredVariants", "forbiddenPatterns"],
+      "properties": {
+        "requiredVariants": {
+          "type": "array",
+          "const": ["737-700", "737-900ER"]
+        },
+        "forbiddenPatterns": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  }
+}

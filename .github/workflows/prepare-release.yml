@@ -1,0 +1,32 @@
+name: Prepare release assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_date:
+        description: Release date in YYYY-MM-DD format
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build and verify release assets
+        run: >-
+          python scripts/build_release.py
+          --release-date "${{ inputs.release_date }}"
+          --check-reproducible
+      - name: Upload prepared assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: X-Plane-LevelUp-737NG-Lufthansa-Livery-v1.0.0
+          path: dist/
+          if-no-files-found: error

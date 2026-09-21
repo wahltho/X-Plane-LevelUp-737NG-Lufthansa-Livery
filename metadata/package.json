@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "name": "X-Plane-LevelUp-737NG-Lufthansa-Livery",
+  "version": "1.0.0",
+  "releaseDate": null,
+  "livery": {
+    "name": "Lufthansa",
+    "author": "wahltho",
+    "maintainer": "wahltho",
+    "registration": "D-ABXN",
+    "classification": "unofficial-freeware"
+  },
+  "aircraft": {
+    "family": "LevelUp 737NG Series",
+    "variants": [
+      {
+        "id": "737-700",
+        "levelUpCode": "737_70NG"
+      },
+      {
+        "id": "737-900ER",
+        "levelUpCode": "737_9ENG"
+      }
+    ]
+  },
+  "source": {
+    "url": "https://forums.x-plane.org/files/file/100399-lufthansa-livery-for-the-levelup-737ng-series-737-700-737-900er/",
+    "publishedAt": "2026-06-26",
+    "originalArchive": {
+      "fileName": "Level Up V2 700 900ER Lufthansa.zip",
+      "size": 120579648,
+      "sha256": "83247063b6d474f87cd5c618d43540ff6eded253e940da6fbce165d4ece1c4df"
+    }
+  },
+  "rights": {
+    "assetClassification": "author-owned-freeware-not-open-source",
+    "assetTerms": "LICENSE-ASSETS.md",
+    "codeTerms": "LICENSE-CODE.md",
+    "notice": "NOTICE.md"
+  },
+  "release": {
+    "assetFileName": "X-Plane-LevelUp-737NG-Lufthansa-Livery-v1.0.0.zip",
+    "manifestFileName": "X-Plane-LevelUp-737NG-Lufthansa-Livery-v1.0.0.manifest.json",
+    "archiveRoot": "Lufthansa",
+    "installationRoot": "<LevelUp aircraft folder>/liveries/Lufthansa",
+    "zipMethod": "stored",
+    "memberTimestamp": "1980-01-01T00:00:00Z"
+  },
+  "forbiddenPatterns": [
+    "__MACOSX/**",
+    "**/.DS_Store",
+    "**/._*",
+    "**/*.cfg"
+  ],
+  "payloadFiles": [
+    {
+      "path": "737_70NG_icon11.png",
+      "size": 189565,
+      "sha256": "c034c4258b460becc8efcfb43c55ed36ae1aae0e0d8e2ae848cfd5ee09cbe990",
+      "variants": ["737-700"],
+      "required": true
+    },
+    {
+      "path": "737_70NG_icon11_thumb.png",
+      "size": 14887,
+      "sha256": "d13fe3e2e6f2ecdeba349d8195757e24124198578e50508f422c27b439313d58",
+      "variants": ["737-700"],
+      "required": true
+    },
+    {
+      "path": "737_9ENG_icon11.png",
+      "size": 164129,
+      "sha256": "94e647d84169d9fb8f229ac7ecedef9d330f09f71f7e26024d3ac930df10880c",
+      "variants": ["737-900ER"],
+      "required": true
+    },
+    {
+      "path": "737_9ENG_icon11_thumb.png",
+      "size": 12794,
+      "sha256": "2c4c96d461e252a68fc9d0e118ab7b138fc9baae299b9fb0ec7006ac68450088",
+      "variants": ["737-900ER"],
+      "required": true
+    },
+    {
+      "path": "objects/737_70NG/737_70NG_fuselage.png",
+      "size": 40423625,
+      "sha256": "4865e7ddf4ece068dbda88d22291bb809810f21cfe8d9bbc9dd2bd25191b7ac4",
+      "variants": ["737-700"],
+      "required": true
+    },
+    {
+      "path": "objects/737_9ENG/737_9ENG_fuselage.png",
+      "size": 35314860,
+      "sha256": "defa63027708ed45912cf2bd9491be9b1eb9e8bc3a5276e185191ad4f8ab7917",
+      "variants": ["737-900ER"],
+      "required": true
+    },
+    {
+      "path": "objects/737_9ENG/737_9ENG_fuselage2.png",
+      "size": 2194806,
+      "sha256": "2d348f5a2712dfe59dda2fbffec70481464924fd01bfee32b7fb2216690eb4ec",
+      "variants": ["737-900ER"],
+      "required": true
+    },
+    {
+      "path": "objects/737cfm56.dds",
+      "size": 11184952,
+      "sha256": "be1a4640262db9f2a4d0461840afdbe446686df6988448e5e33fc55333a146ff",
+      "variants": ["737-700", "737-900ER"],
+      "required": true
+    },
+    {
+      "path": "objects/737tail.png",
+      "size": 38558586,
+      "sha256": "fbaca4bc96e6c921a1a4f76db8bf573b60f7fc7aff9108da8c561ca475b853dc",
+      "variants": ["737-700", "737-900ER"],
+      "required": true
+    }
+  ]
+}
