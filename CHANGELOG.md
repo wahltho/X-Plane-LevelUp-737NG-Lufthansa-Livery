@@ -2,7 +2,7 @@
 
 All notable repository releases will be documented here.
 
-## [1.0.0] - Unreleased
+## [1.0.0] - 2026-09-21
 
 - Prepare the existing Lufthansa livery for standalone distribution.
 - Include LevelUp 737-700 and 737-900ER support in one package.

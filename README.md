@@ -38,7 +38,7 @@ metadata from the original archive is deliberately excluded.
 
 ## Release asset
 
-The planned first repository release is `v1.0.0` with this asset:
+The current repository release is `v1.0.0` with this asset:
 
 `X-Plane-LevelUp-737NG-Lufthansa-Livery-v1.0.0.zip`
 

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "name": "X-Plane-LevelUp-737NG-Lufthansa-Livery",
   "version": "1.0.0",
-  "releaseDate": null,
+  "releaseDate": "2026-09-21",
   "manifestContract": {
     "packageType": "livery",
     "packageId": "wahltho.levelup-737ng.livery.lufthansa",
