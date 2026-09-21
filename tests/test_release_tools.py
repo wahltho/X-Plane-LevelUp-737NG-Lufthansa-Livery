@@ -67,6 +67,7 @@ class ReleaseContractTests(unittest.TestCase):
         self.assertIn("?!Lufthansa/", pattern)
 
     def test_release_file_names_are_stable(self) -> None:
+        self.assertEqual(self.metadata["releaseDate"], "2026-09-21")
         self.assertEqual(
             self.metadata["release"]["assetFileName"],
             "X-Plane-LevelUp-737NG-Lufthansa-Livery-v1.0.0.zip",
