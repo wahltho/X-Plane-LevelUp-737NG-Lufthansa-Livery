@@ -5,11 +5,28 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import zipfile
 from pathlib import Path, PurePosixPath
 from typing import Any
 
 FIXED_ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
+SEMVER_PATTERN = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
+MTK_CONTRACT_FIELDS = (
+    "schemaVersion",
+    "packageType",
+    "packageId",
+    "packageVersion",
+    "releaseTag",
+    "channel",
+    "repository",
+    "supportedProducts",
+    "supportedVariants",
+    "installScope",
+    "targetDirectory",
+    "archiveRoot",
+    "restartRequired",
+)
 
 
 class ReleaseError(RuntimeError):
@@ -55,10 +72,113 @@ def is_forbidden(path: str) -> bool:
     )
 
 
+def is_relative_payload_path(path: str, archive_root: str) -> bool:
+    pure = PurePosixPath(path)
+    return (
+        bool(path)
+        and not path.startswith("/")
+        and "\\" not in path
+        and ".." not in pure.parts
+        and pure.parts[0] != archive_root
+        and not is_forbidden(path)
+    )
+
+
+def expected_manifest_contract(metadata: dict[str, Any]) -> dict[str, Any]:
+    configured = metadata.get("manifestContract")
+    if not isinstance(configured, dict):
+        raise ReleaseError("metadata/package.json has no manifestContract object")
+    contract = {
+        "schemaVersion": metadata["schemaVersion"],
+        "packageVersion": metadata["version"],
+        **configured,
+    }
+    validate_manifest_contract(contract, require_payload=False)
+    if contract["releaseTag"] != f"v{contract['packageVersion']}":
+        raise ReleaseError("releaseTag must equal 'v' plus packageVersion")
+    if contract["targetDirectory"] != contract["archiveRoot"]:
+        raise ReleaseError("targetDirectory and archiveRoot must match for this livery")
+    return contract
+
+
+def validate_manifest_contract(
+    manifest: dict[str, Any], *, require_payload: bool = True
+) -> None:
+    missing = [field for field in MTK_CONTRACT_FIELDS if field not in manifest]
+    if missing:
+        raise ReleaseError(f"Manifest is missing MTK contract fields: {missing}")
+    if manifest["schemaVersion"] != 1:
+        raise ReleaseError("Unsupported manifest schemaVersion")
+    for field in (
+        "packageType",
+        "packageId",
+        "packageVersion",
+        "releaseTag",
+        "channel",
+        "repository",
+        "installScope",
+        "targetDirectory",
+        "archiveRoot",
+    ):
+        if not isinstance(manifest[field], str) or not manifest[field]:
+            raise ReleaseError(f"Manifest field {field} must be a non-empty string")
+    if not SEMVER_PATTERN.fullmatch(manifest["packageVersion"]):
+        raise ReleaseError("packageVersion must be semantic version major.minor.patch")
+    if manifest["releaseTag"] != f"v{manifest['packageVersion']}":
+        raise ReleaseError("releaseTag does not match packageVersion")
+    if "/" in manifest["archiveRoot"] or manifest["archiveRoot"] in {".", ".."}:
+        raise ReleaseError("archiveRoot must be one portable directory name")
+    if "/" in manifest["targetDirectory"] or manifest["targetDirectory"] in {".", ".."}:
+        raise ReleaseError("targetDirectory must be one portable directory name")
+    for field in ("supportedProducts", "supportedVariants"):
+        value = manifest[field]
+        if (
+            not isinstance(value, list)
+            or not value
+            or any(not isinstance(item, str) or not item for item in value)
+            or len(value) != len(set(value))
+        ):
+            raise ReleaseError(f"Manifest field {field} must contain unique strings")
+    if not isinstance(manifest["restartRequired"], bool):
+        raise ReleaseError("restartRequired must be boolean")
+
+    if not require_payload:
+        return
+    files = manifest.get("files")
+    if not isinstance(files, list) or not files:
+        raise ReleaseError("Manifest has no files")
+    seen: set[str] = set()
+    for item in files:
+        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+            raise ReleaseError("Invalid manifest file entry")
+        path = item["path"]
+        if not is_relative_payload_path(path, manifest["archiveRoot"]):
+            raise ReleaseError(f"Manifest file path is not relative to archiveRoot: {path}")
+        if path in seen:
+            raise ReleaseError(f"Duplicate manifest file path: {path}")
+        seen.add(path)
+
+
+def verify_manifest_against_metadata(
+    manifest: dict[str, Any], metadata: dict[str, Any]
+) -> None:
+    validate_manifest_contract(manifest)
+    expected = expected_manifest_contract(metadata)
+    actual = {field: manifest[field] for field in MTK_CONTRACT_FIELDS}
+    if actual != expected:
+        raise ReleaseError(
+            "Manifest MTK contract does not match package metadata; "
+            f"expected={expected}, actual={actual}"
+        )
+    if manifest.get("archive", {}).get("fileName") != metadata["release"]["assetFileName"]:
+        raise ReleaseError("Manifest archive filename does not match package metadata")
+
+
 def expected_source_files(metadata: dict[str, Any]) -> list[dict[str, Any]]:
     payload = metadata.get("payloadFiles")
     if not isinstance(payload, list) or not payload:
         raise ReleaseError("metadata/package.json has no payloadFiles")
+    archive_root = expected_manifest_contract(metadata)["archiveRoot"]
     seen: set[str] = set()
     for item in payload:
         if not isinstance(item, dict) or not isinstance(item.get("path"), str):
@@ -66,8 +186,8 @@ def expected_source_files(metadata: dict[str, Any]) -> list[dict[str, Any]]:
         path = item["path"]
         if path in seen:
             raise ReleaseError(f"Duplicate metadata path: {path}")
-        if is_forbidden(path):
-            raise ReleaseError(f"Forbidden metadata path: {path}")
+        if not is_relative_payload_path(path, archive_root):
+            raise ReleaseError(f"Invalid metadata payload path: {path}")
         seen.add(path)
     return sorted(payload, key=lambda item: item["path"])
 
@@ -127,10 +247,10 @@ def make_manifest(
     archive_path: Path,
     files: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    archive_root = metadata["release"]["archiveRoot"]
+    contract = expected_manifest_contract(metadata)
     manifest_files = [
         {
-            "path": f"{archive_root}/{item['path']}",
+            "path": item["path"],
             "size": item["size"],
             "sha256": item["sha256"],
             "variants": item["variants"],
@@ -139,20 +259,12 @@ def make_manifest(
         for item in files
     ]
     return {
-        "schemaVersion": metadata["schemaVersion"],
-        "package": {
-            "name": metadata["name"],
-            "version": metadata["version"],
-            "releaseDate": release_date,
-        },
+        **contract,
+        "releaseDate": release_date,
         "source": metadata["source"],
         "aircraft": metadata["aircraft"],
         "livery": metadata["livery"],
         "rights": metadata["rights"],
-        "installation": {
-            "archiveRoot": archive_root,
-            "target": metadata["release"]["installationRoot"],
-        },
         "archive": {
             "fileName": archive_path.name,
             "size": archive_path.stat().st_size,
@@ -165,13 +277,13 @@ def make_manifest(
             "uncompressedBytes": sum(item["size"] for item in manifest_files),
         },
         "validation": {
-            "requiredVariants": [item["id"] for item in metadata["aircraft"]["variants"]],
             "forbiddenPatterns": metadata["forbiddenPatterns"],
         },
     }
 
 
 def verify_archive(archive_path: Path, manifest: dict[str, Any]) -> None:
+    validate_manifest_contract(manifest)
     archive_meta = manifest["archive"]
     if archive_path.name != archive_meta["fileName"]:
         raise ReleaseError("Archive filename does not match manifest")
@@ -180,12 +292,19 @@ def verify_archive(archive_path: Path, manifest: dict[str, Any]) -> None:
     if sha256_file(archive_path) != archive_meta["sha256"]:
         raise ReleaseError("Archive SHA-256 does not match manifest")
 
-    expected = {item["path"]: item for item in manifest["files"]}
+    archive_root = manifest["archiveRoot"]
+    expected = {f"{archive_root}/{item['path']}": item for item in manifest["files"]}
     with zipfile.ZipFile(archive_path, "r") as archive:
         bad_member = archive.testzip()
         if bad_member is not None:
             raise ReleaseError(f"ZIP CRC check failed: {bad_member}")
-        infos = [info for info in archive.infolist() if not info.is_dir()]
+        all_infos = archive.infolist()
+        roots = {PurePosixPath(info.filename).parts[0] for info in all_infos if info.filename}
+        if roots != {archive_root}:
+            raise ReleaseError(
+                f"ZIP must contain exactly the root {archive_root!r}; found {sorted(roots)}"
+            )
+        infos = [info for info in all_infos if not info.is_dir()]
         names = [info.filename for info in infos]
         if len(names) != len(set(names)):
             raise ReleaseError("ZIP contains duplicate member names")

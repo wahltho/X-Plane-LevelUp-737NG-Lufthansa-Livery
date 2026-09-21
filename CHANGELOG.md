@@ -9,3 +9,6 @@ All notable repository releases will be documented here.
 - Preserve the nine functional files from the original X-Plane.org upload.
 - Exclude `.DS_Store`, AppleDouble files, and `__MACOSX` metadata.
 - Add machine-readable metadata and deterministic release tooling.
+- Add the stable MTK livery manifest contract and relative payload paths.
+- Validate the manifest, single ZIP root, unchanged payload, and reproducible
+  output on Linux, macOS, and Windows.

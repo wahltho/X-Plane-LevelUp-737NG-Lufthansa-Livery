@@ -13,12 +13,15 @@ python3 scripts/verify_release.py \
 
 A successful run exits with status 0 and prints a concise summary. Any missing,
 extra, renamed, damaged, or forbidden archive member causes a nonzero exit.
+The verifier also rejects missing or inconsistent MTK contract fields and any
+manifest file path that includes the `Lufthansa/` archive-root prefix.
 
 ## Manual review
 
 Before publication, also confirm:
 
 - the ZIP has exactly one root directory named `Lufthansa`;
+- every manifest `files[].path` is relative to that root;
 - both aircraft variants have their two icon files;
 - both aircraft-specific fuselage areas are present;
 - the shared engine and tail textures are present only once;

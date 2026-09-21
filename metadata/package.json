@@ -3,6 +3,19 @@
   "name": "X-Plane-LevelUp-737NG-Lufthansa-Livery",
   "version": "1.0.0",
   "releaseDate": null,
+  "manifestContract": {
+    "packageType": "livery",
+    "packageId": "wahltho.levelup-737ng.livery.lufthansa",
+    "releaseTag": "v1.0.0",
+    "channel": "stable",
+    "repository": "https://github.com/wahltho/X-Plane-LevelUp-737NG-Lufthansa-Livery",
+    "supportedProducts": ["levelup-737ng"],
+    "supportedVariants": ["737-700", "737-900ER"],
+    "installScope": "aircraftLivery",
+    "targetDirectory": "Lufthansa",
+    "archiveRoot": "Lufthansa",
+    "restartRequired": true
+  },
   "livery": {
     "name": "Lufthansa",
     "author": "wahltho",
@@ -41,7 +54,6 @@
   "release": {
     "assetFileName": "X-Plane-LevelUp-737NG-Lufthansa-Livery-v1.0.0.zip",
     "manifestFileName": "X-Plane-LevelUp-737NG-Lufthansa-Livery-v1.0.0.manifest.json",
-    "archiveRoot": "Lufthansa",
     "installationRoot": "<LevelUp aircraft folder>/liveries/Lufthansa",
     "zipMethod": "stored",
     "memberTimestamp": "1980-01-01T00:00:00Z"

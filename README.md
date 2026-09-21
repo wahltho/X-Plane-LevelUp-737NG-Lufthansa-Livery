@@ -26,6 +26,7 @@ and the aircraft textures below `Lufthansa/objects`. See
 - `src/Lufthansa/` is the only canonical package source.
 - `metadata/package.json` describes every required source file and its SHA-256.
 - `scripts/` builds and verifies deterministic release assets.
+- `tests/` validates the MTK contract, canonical payload, and archive layout.
 - `schema/` contains the JSON Schema for generated release manifests.
 - `docs/` contains installation, variant, provenance, release, and verification
   documentation.
@@ -44,6 +45,15 @@ The planned first repository release is `v1.0.0` with this asset:
 The ZIP root is `Lufthansa/`, so the package can be extracted directly into the
 LevelUp `liveries` directory. The external manifest and `SHA256SUMS.txt` are
 generated alongside the archive.
+
+## Maintenance Toolkit contract
+
+The generated manifest identifies this package as
+`wahltho.levelup-737ng.livery.lufthansa`, targets the Maintenance Toolkit
+product `levelup-737ng`, and uses the `aircraftLivery` install scope. Manifest
+file paths are relative to the declared `Lufthansa` archive root; the ZIP itself
+still contains that root directory. See
+[`docs/MTK_INTEGRATION.md`](docs/MTK_INTEGRATION.md) for the complete contract.
 
 ## Rights and trademarks
 

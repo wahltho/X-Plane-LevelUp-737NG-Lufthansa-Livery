@@ -11,7 +11,10 @@ from release_common import (
     load_json,
     verify_archive,
     verify_checksum_file,
+    verify_manifest_against_metadata,
 )
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 
 def parse_args() -> argparse.Namespace:
@@ -27,6 +30,8 @@ def main() -> int:
     archive = args.archive.resolve()
     manifest_path = args.manifest.resolve()
     manifest = load_json(manifest_path)
+    metadata = load_json(REPOSITORY_ROOT / "metadata" / "package.json")
+    verify_manifest_against_metadata(manifest, metadata)
     verify_archive(archive, manifest)
     if args.checksums is not None:
         verify_checksum_file(args.checksums.resolve(), [archive, manifest_path])

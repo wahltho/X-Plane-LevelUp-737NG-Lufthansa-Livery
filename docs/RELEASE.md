@@ -8,6 +8,7 @@ decisions. The commands below only prepare and verify local assets.
 - Confirm `version` in `metadata/package.json`.
 - Confirm the changelog entry.
 - Confirm all source file sizes and SHA-256 values.
+- Confirm the MTK contract in `metadata/package.json`.
 - Choose the actual release date in `YYYY-MM-DD` format.
 
 ## 2. Build
@@ -15,6 +16,7 @@ decisions. The commands below only prepare and verify local assets.
 From the repository root:
 
 ```sh
+python3 -m unittest discover -s tests -v
 python3 scripts/build_release.py --release-date YYYY-MM-DD --check-reproducible
 ```
 
@@ -39,7 +41,8 @@ python3 scripts/verify_release.py \
 
 The verifier reopens the ZIP and checks its complete file set, root directory,
 per-file sizes and SHA-256 values, archive size and SHA-256, total uncompressed
-size, and forbidden metadata.
+size, forbidden metadata, all required MTK fields, and root-relative manifest
+paths.
 
 ## 4. Prepare CI artifacts
 

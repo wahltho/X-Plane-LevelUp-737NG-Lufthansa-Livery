@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import shutil
 import tempfile
 from pathlib import Path
 
@@ -19,6 +18,7 @@ from release_common import (
     validate_source,
     verify_archive,
     verify_checksum_file,
+    verify_manifest_against_metadata,
 )
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
@@ -57,7 +57,8 @@ def validate_release_date(value: str) -> str:
 
 def build_outputs(output_dir: Path, release_date: str) -> list[Path]:
     metadata = load_json(REPOSITORY_ROOT / "metadata" / "package.json")
-    source_root = REPOSITORY_ROOT / "src" / metadata["release"]["archiveRoot"]
+    archive_root = metadata["manifestContract"]["archiveRoot"]
+    source_root = REPOSITORY_ROOT / "src" / archive_root
     files = validate_source(source_root, metadata)
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -65,7 +66,7 @@ def build_outputs(output_dir: Path, release_date: str) -> list[Path]:
     manifest_path = output_dir / metadata["release"]["manifestFileName"]
     checksum_path = output_dir / "SHA256SUMS.txt"
 
-    build_zip(archive_path, source_root, metadata["release"]["archiveRoot"], files)
+    build_zip(archive_path, source_root, archive_root, files)
     manifest = make_manifest(metadata, release_date, archive_path, files)
     manifest_path.write_bytes(canonical_json_bytes(manifest))
     checksum_path.write_text(
@@ -75,6 +76,7 @@ def build_outputs(output_dir: Path, release_date: str) -> list[Path]:
         newline="\n",
     )
 
+    verify_manifest_against_metadata(manifest, metadata)
     verify_archive(archive_path, manifest)
     verify_checksum_file(checksum_path, [archive_path, manifest_path])
     return [archive_path, manifest_path, checksum_path]
